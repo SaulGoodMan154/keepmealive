@@ -1,0 +1,37 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: '0 6 */3 * *'  # Runs every 3 days at 6AM UTC
+  workflow_dispatch:         # Enables manual trigger from GitHub UI
+
+jobs:
+  restore-all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Restore all Supabase projects
+        env:
+          TOKEN_ACCOUNT_A: ${{ secrets.SUPABASE_TOKEN_ACCOUNT_A }}
+          TOKEN_ACCOUNT_B: ${{ secrets.SUPABASE_TOKEN_ACCOUNT_B }}
+        run: |
+          restore() {
+            local token=$1
+            local ref=$2
+            local name=$3
+            echo "Restoring: $name ($ref)"
+            response=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X POST "https://api.supabase.com/v1/projects/$ref/restore" \
+              -H "Authorization: Bearer $token" \
+              -H "Content-Type: application/json")
+            echo "$name -> HTTP $response"
+          }
+
+          # Account A — 1 project
+          restore "$TOKEN_ACCOUNT_A" "dalknkrliiogkycwptbh" "Project-AccountA"
+
+          # Account B — 2 projects
+          restore "$TOKEN_ACCOUNT_B" "desxlxesgbnsiwuphqok" "Project-AccountB-1"
+          restore "$TOKEN_ACCOUNT_B" "nzrmpmwwbuwytpaqwodp" "Project-AccountB-2"
+
+          echo "All projects restore triggered."
