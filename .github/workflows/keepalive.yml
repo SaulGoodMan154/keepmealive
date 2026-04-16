@@ -32,6 +32,6 @@ jobs:
 
           # Account B — 2 projects
           restore "$TOKEN_ACCOUNT_B" "desxlxesgbnsiwuphqok" "Project-AccountB-1"
-          restore "$TOKEN_ACCOUNT_B" "nzrmpmwwbuwytpaqwodp" "Project-AccountB-2"
+          restore "$TOKEN_ACCOUNT_B" "xyhekegfanurgypucvbr" "Project-AccountB-2"
 
           echo "All projects restore triggered."
