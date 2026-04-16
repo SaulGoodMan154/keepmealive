@@ -20,11 +20,13 @@ jobs:
             local ref=$2
             local name=$3
             echo "Restoring: $name ($ref)"
-            response=$(curl -s -o /dev/null -w "%{http_code}" \
+            body=$(curl -s -w "\n%{http_code}" \
               -X POST "https://api.supabase.com/v1/projects/$ref/restore" \
               -H "Authorization: Bearer $token" \
               -H "Content-Type: application/json")
-            echo "$name -> HTTP $response"
+            http_code=$(echo "$body" | tail -1)
+            response_body=$(echo "$body" | head -n -1)
+            echo "$name -> HTTP $http_code | $response_body"
           }
 
           # Account A — 1 project
@@ -33,5 +35,16 @@ jobs:
           # Account B — 2 projects
           restore "$TOKEN_ACCOUNT_B" "desxlxesgbnsiwuphqok" "Project-AccountB-1"
           restore "$TOKEN_ACCOUNT_B" "nzrmpmwwbuwytpaqwodp" "Project-AccountB-2"
+
+          # Debug: check which token can see Project-AccountB-2
+          echo "--- Debug GET nzrmpmwwbuwytpaqwodp with TOKEN_ACCOUNT_B ---"
+          curl -s -w "\nHTTP %{http_code}" \
+            -X GET "https://api.supabase.com/v1/projects/nzrmpmwwbuwytpaqwodp" \
+            -H "Authorization: Bearer $TOKEN_ACCOUNT_B"
+          echo ""
+          echo "--- Debug GET nzrmpmwwbuwytpaqwodp with TOKEN_ACCOUNT_A ---"
+          curl -s -w "\nHTTP %{http_code}" \
+            -X GET "https://api.supabase.com/v1/projects/nzrmpmwwbuwytpaqwodp" \
+            -H "Authorization: Bearer $TOKEN_ACCOUNT_A"
 
           echo "All projects restore triggered."
